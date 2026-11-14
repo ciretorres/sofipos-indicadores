@@ -1,0 +1,25 @@
+# Entorno virtual y artefactos de Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# macOS
+.DS_Store
+
+# Datos crudos de la CNBV: se descargan aparte (ver entradas/README.md)
+/entradas/*
+!/entradas/README.md
+
+# Salidas generadas
+/salidas/
+
+# Archivos de trabajo y modelos (no forman parte del generador)
+/*.xlsx
+/*.pdf
+
+# Herramientas de agentes
+.agents/
+skills-lock.json
