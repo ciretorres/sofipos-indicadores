@@ -32,7 +32,7 @@ las instrucciones de [`entradas/README.md`](entradas/README.md).
 
 ## Requisitos
 
-- Python 3.9 o superior
+- Python 3.9 o superior. En Windows usa `python`; en macOS y Linux, `python3`.
 - [`openpyxl`](https://openpyxl.readthedocs.io/) 3.1+ (ver `requirements.txt`)
 
 ## Instalación
@@ -40,7 +40,33 @@ las instrucciones de [`entradas/README.md`](entradas/README.md).
 ```bash
 git clone https://github.com/<tu-usuario>/sofipos-indicadores.git
 cd sofipos-indicadores
+```
+
+### Crear el entorno virtual
+
+**Windows** (PowerShell o CMD):
+
+```powershell
+python -m venv .venv
+```
+
+**macOS / Linux**:
+
+```bash
 python3 -m venv .venv
+```
+
+### Instalar dependencias
+
+**Windows**:
+
+```powershell
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+**macOS / Linux**:
+
+```bash
 .venv/bin/pip install -r requirements.txt
 ```
 
@@ -49,11 +75,30 @@ python3 -m venv .venv
 Descarga primero los datos de entrada (ver
 [`entradas/README.md`](entradas/README.md)) y después ejecuta:
 
+**Windows**:
+
+```powershell
+.venv\Scripts\python.exe generar_sofipos_2026.py
+```
+
+**macOS / Linux**:
+
 ```bash
 .venv/bin/python generar_sofipos_2026.py
 ```
 
 Sale con código 0 cuando todas las validaciones pasan. Opciones:
+
+**Windows**:
+
+```powershell
+.venv\Scripts\python.exe generar_sofipos_2026.py --entradas otra_carpeta
+.venv\Scripts\python.exe generar_sofipos_2026.py --salidas otra_carpeta
+.venv\Scripts\python.exe generar_sofipos_2026.py --out ruta/exacta.xlsx
+.venv\Scripts\python.exe generar_sofipos_2026.py --tablero ruta/027_datos.csv
+```
+
+**macOS / Linux**:
 
 ```bash
 .venv/bin/python generar_sofipos_2026.py --entradas otra_carpeta

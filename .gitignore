@@ -9,6 +9,10 @@ __pycache__/
 # macOS
 .DS_Store
 
+# Windows
+Thumbs.db
+Desktop.ini
+
 # Datos crudos de la CNBV: se descargan aparte (ver entradas/README.md)
 /entradas/*
 !/entradas/README.md
