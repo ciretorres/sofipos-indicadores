@@ -21,9 +21,41 @@ sofipos-indicadores/
 │   └── BE_SOFIPOS_AAAAMM.xlsx                hoja Universo 
 ├── salidas/                                  libro generado (no versionado)
 │   └── SOFIPOS_2026_Datos.xlsx               7 hojas
-├── generar_sofipos_2026.py                   generador
+├── generar_sofipos_2026.py                   punto de entrada (wrapper)
+├── sofipos/                                  todo el código del generador
+│   ├── __main__.py                           permite `python -m sofipos`
+│   ├── main.py                               CLI (argparse) y orquestación
+│   ├── config.py                             rutas, ANIOS, MESES, CONCEPTOS, ND
+│   ├── catalogo.py                           CATALOGO: 35 entidades
+│   ├── utilidades.py                         fechas, números, normalización
+│   ├── xlsx_lector.py                        lee .xlsx con zipfile + ElementTree
+│   ├── be.py                                 boletín BE: Universo y validación
+│   ├── tablero.py                            lee el CSV mensual (027_datos.csv)
+│   ├── filas.py                              arma las filas de cada año
+│   ├── validacion_datos.py                   las 6 validaciones de datos
+│   ├── estilos.py                            paleta, formatos y helpers de celda
+│   ├── fichas.py                             FICHAS: diccionario y semáforos
+│   ├── hojas/                                escritura de las 7 hojas
+│   │   ├── __init__.py                       escribir_xlsx (orden de hojas)
+│   │   ├── catalogo.py                       Catálogo SOFIPOS
+│   │   ├── datos_fuente.py                   Datos Fuente {año}
+│   │   ├── indicadores.py                    Indicadores {año} + CF
+│   │   ├── diccionario.py                    Diccionario
+│   │   └── semaforos.py                      Semáforos
+│   └── validacion_libro.py                   valida el .xlsx generado
+├── scripts/
+│   └── comparar.py                           compara dos libros y dos stdout
 ├── requirements.txt
 └── README.md
+```
+
+Cada archivo tiene una sola responsabilidad y solo importa de capas
+anteriores (no hay imports circulares):
+
+```
+config ← utilidades ← xlsx_lector ← be / tablero ← filas ← validacion_datos
+   ↑                                                             ↑
+estilos ← fichas ← hojas/* ← validacion_libro ← main ← generar_sofipos_2026.py
 ```
 
 `entradas/` y `salidas/` están en `.gitignore` porque pesan decenas de MB y
@@ -87,7 +119,25 @@ Descarga primero los datos de entrada (ver
 .venv/bin/python generar_sofipos_2026.py
 ```
 
-Sale con código 0 cuando todas las validaciones pasan. Opciones:
+Sale con código 0 cuando todas las validaciones pasan. Hay dos formas de
+invocarlo (hacen exactamente lo mismo); ambas se ejecutan desde la raíz del
+repositorio:
+
+**Windows**:
+
+```powershell
+.venv\Scripts\python.exe generar_sofipos_2026.py
+.venv\Scripts\python.exe -m sofipos
+```
+
+**macOS / Linux**:
+
+```bash
+.venv/bin/python generar_sofipos_2026.py
+.venv/bin/python -m sofipos
+```
+
+Opciones (iguales en las dos formas):
 
 **Windows**:
 
@@ -317,7 +367,7 @@ fila.
 
 1. Descarga el tablero actualizado y reemplaza
    `entradas/tablero/sh_datos_csv_27_i/027_datos.csv`.
-2. Agrega el mes a `ANIOS` en el generador:
+2. Agrega el mes a `ANIOS`, en `sofipos/config.py`:
 
 ```python
 ANIOS = {2025: tuple(range(1, 13)), 2026: tuple(range(1, 9))}   # 8 = agosto
@@ -328,23 +378,64 @@ ANIOS = {2025: tuple(range(1, 13)), 2026: tuple(range(1, 9))}   # 8 = agosto
 
 ### Un año nuevo
 
-Agrega el año a `ANIOS` y crea la hoja correspondiente. El generador arma las
-hojas de datos e indicadores con el mismo código (`escribir_datos_fuente` y
-`escribir_indicadores` reciben el año). Habrá que agregar la llamada en
-`escribir_xlsx` y el nombre esperado en `validar_libro`.
+Agrega el año a `ANIOS` (en `sofipos/config.py`) y crea la hoja
+correspondiente. El generador arma las hojas de datos e indicadores con el
+mismo código (`sofipos/hojas/datos_fuente.py` y `sofipos/hojas/indicadores.py`
+reciben el año). Habrá que agregar la llamada en `sofipos/hojas/__init__.py`
+(`escribir_xlsx`) y el nombre esperado en `sofipos/validacion_libro.py`.
 
 ### Una SOFIPO nueva
 
 1. Debe aparecer en la hoja `Universo` del BE vigente con estatus "en
    operación".
-2. Agrega su denominación social y sitio web al diccionario `CATALOGO` del
-   generador.
+2. Agrega su denominación social y sitio web al diccionario `CATALOGO` de
+   `sofipos/catalogo.py`.
+
+## Verificar que un cambio no altera el libro
+
+`scripts/comparar.py` compara dos libros (y opcionalmente dos salidas de
+`stdout`) celda por celda: valores, fórmulas, formatos, notas, anchos y
+formato condicional. Sale con código 0 si son idénticos.
+
+**Windows** (compara solo el .xlsx):
+
+```powershell
+.venv\Scripts\python.exe generar_sofipos_2026.py --out $env:TEMP\sofi.xlsx
+Copy-Item $env:TEMP\sofi.xlsx $env:TEMP\referencia.xlsx
+
+# ... hacer el cambio ...
+
+.venv\Scripts\python.exe generar_sofipos_2026.py --out $env:TEMP\sofi.xlsx
+.venv\Scripts\python.exe scripts\comparar.py --xlsx-a $env:TEMP\referencia.xlsx --xlsx-b $env:TEMP\sofi.xlsx
+```
+
+**macOS / Linux** (compara el .xlsx y el stdout):
+
+```bash
+# 1. generar una referencia con el código actual
+.venv/bin/python generar_sofipos_2026.py --out /tmp/sofi.xlsx > /tmp/salida1.txt
+cp /tmp/sofi.xlsx /tmp/referencia.xlsx
+
+# 2. hacer el cambio y volver a generar (misma ruta)
+.venv/bin/python generar_sofipos_2026.py --out /tmp/sofi.xlsx > /tmp/salida2.txt
+
+# 3. comparar
+.venv/bin/python scripts/comparar.py \
+    --xlsx-a /tmp/referencia.xlsx --xlsx-b /tmp/sofi.xlsx \
+    --stdout-a /tmp/salida1.txt --stdout-b /tmp/salida2.txt
+```
+
+Si también comparas el `stdout`, ambas corridas deben escribir en la **misma
+ruta**: la última línea (`Archivo generado: …`) imprime la ruta exacta.
+
+Sirve tanto para cambios grandes (como el refactor en `sofipos/`) como para
+ajustes chicos: un `IDÉNTICO` significa que el libro no cambió en nada.
 
 ## Notas de mantenimiento
 
-- Las reglas del semáforo viven en la lista `FICHAS`. Si cambia un umbral, hay
-  que cambiarlo ahí para que el libro se vuelva a producir igual; la hoja
-  `Semáforos` se genera a partir de esa misma lista.
+- Las reglas del semáforo viven en la lista `FICHAS` (`sofipos/fichas.py`).
+  Si cambia un umbral, hay que cambiarlo ahí para que el libro se vuelva a
+  producir igual; la hoja `Semáforos` se genera a partir de esa misma lista.
 - Las estimaciones preventivas conservan el signo de la CNBV; por eso ICOR usa
   `ABS(...)`.
 
