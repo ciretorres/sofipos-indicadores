@@ -24,8 +24,8 @@ def escribir_xlsx(
     """Genera el libro de Excel y lo guarda en la ruta indicada.
 
     Crea las hojas del catálogo, los datos fuente, los indicadores, el
-    diccionario y los semáforos para 2025 y 2026. Guarda primero el archivo
-    en un temporal y luego lo mueve a la ruta final.
+    diccionario y los semáforos de los años en ``filas``. Guarda primero el
+    archivo en un temporal y luego lo mueve a la ruta final.
 
     Args:
         universo: Sociedades incluidas en el libro.
@@ -33,22 +33,25 @@ def escribir_xlsx(
         filas: Registros mensuales agrupados por año.
         ruta: Ruta de destino del archivo ``.xlsx``.
     """
+    anios = sorted(filas, reverse=True)
+
     wb = Workbook()
     wb.remove(wb.active)
 
     # Crea las hojas del libro en el orden deseado.
     escribir_catalogo(wb, universo, nombres)
-    escribir_datos_fuente(wb, filas[2026], 2026, len(universo))
-    escribir_datos_fuente(wb, filas[2025], 2025, len(universo))
-    escribir_indicadores(wb, filas[2026], 2026)
-    escribir_indicadores(wb, filas[2025], 2025)
+    for a in anios:
+        escribir_datos_fuente(wb, filas[a], a, len(universo))
+    for a in anios:
+        escribir_indicadores(wb, filas[a], a)
     escribir_diccionario(wb)
     escribir_semaforos(wb)
 
     # Añade metadatos al archivo.
+    rango = f"{min(anios)}-{max(anios)}" if len(anios) > 1 else str(anios[0])
     wb.properties.title = (
         "SOFIPOS - Catálogo, datos fuente, indicadores, diccionario "
-        "y semáforos 2025-2026"
+        f"y semáforos {rango}"
     )
     wb.properties.subject = (
         "Cartera, captación, resultados, capitalización e indicadores mensuales"

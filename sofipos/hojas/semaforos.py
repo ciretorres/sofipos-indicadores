@@ -5,6 +5,7 @@ from __future__ import annotations
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill
 
+from ..config import ANIOS
 from ..estilos import (
     AZUL,
     BORDE,
@@ -22,6 +23,7 @@ from ..estilos import (
     _titulo,
 )
 from ..fichas import COLORES, FICHAS_SEMAFORO, TOTAL_REGLAS
+from ..utilidades import enumerar
 
 
 def escribir_semaforos(wb: Workbook) -> None:
@@ -201,9 +203,12 @@ def escribir_semaforos(wb: Workbook) -> None:
         fila += 1
 
     # Incluye aclaraciones sobre los rangos y la aplicación de los semáforos.
+    hojas_indicadores = enumerar(
+        [f"Indicadores {a}" for a in sorted(ANIOS, reverse=True)]
+    )
     notas = [
-        "Estos son los mismos umbrales que aplica el formato condicional de las hojas Indicadores "
-        f"2026 e Indicadores 2025 ({len(FICHAS_SEMAFORO)} indicadores y {TOTAL_REGLAS} reglas). "
+        "Estos son los mismos umbrales que aplica el formato condicional de las hojas "
+        f"{hojas_indicadores} ({len(FICHAS_SEMAFORO)} indicadores y {TOTAL_REGLAS} reglas). "
         "Al cambiar un rango aquí hay que cambiarlo en el generador (lista FICHAS).",
         "Crecimiento de Captación y Crecimiento de Cartera: verde arriba de 10%, amarillo de "
         "0% a 10%, rojo por debajo de 0%.",

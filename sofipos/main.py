@@ -36,7 +36,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
             "Genera el Excel mensual de las 35 SOFIPOS "
-            "(2025 completo y 2026 enero-agosto)."
+            f"({', '.join(str(a) for a in sorted(ANIOS))})."
         )
     )
     parser.add_argument(

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from openpyxl import Workbook
 
+from ..config import ANIOS
 from ..estilos import (
     ENC_DICCIONARIO,
     FILA_DATOS,
@@ -16,6 +17,7 @@ from ..estilos import (
     _titulo,
 )
 from ..fichas import FICHAS
+from ..utilidades import enumerar
 
 
 def escribir_diccionario(wb: Workbook) -> None:
@@ -35,7 +37,8 @@ def escribir_diccionario(wb: Workbook) -> None:
         ncols,
         "SOCIEDADES FINANCIERAS POPULARES (SOFIPO) · Diccionario de indicadores",
         "Qué mide cada indicador, cómo se calcula y a qué grupo de razón financiera pertenece",
-        "Cada renglón corresponde a una columna de las hojas Indicadores 2026 e Indicadores 2025. "
+        "Cada renglón corresponde a una columna de las hojas "
+        f"{enumerar([f'Indicadores {a}' for a in sorted(ANIOS, reverse=True)])}. "
         "Las fórmulas se expresan en función de las columnas de Datos Fuente.",
     )
 

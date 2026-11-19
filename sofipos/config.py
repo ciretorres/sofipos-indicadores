@@ -45,6 +45,7 @@ MES_NUM = {nombre: numero for numero, nombre in MESES.items()}
 
 # Años y meses que se incluirán en el libro.
 ANIOS = {
+    2024: tuple(range(1, 13)),
     2025: tuple(range(1, 13)),
     2026: tuple(range(1, 9)),
 }

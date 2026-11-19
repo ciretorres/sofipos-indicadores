@@ -1,6 +1,6 @@
 """Pruebas de las utilidades de fechas y conversión."""
 
-from sofipos.utilidades import a_miles, fecha_anterior, fecha_mes
+from sofipos.utilidades import a_miles, enumerar, fecha_anterior, fecha_mes
 
 
 def test_fecha_mes_concatena_anio_y_mes():
@@ -19,3 +19,26 @@ def test_a_miles_convierte_pesos_a_miles():
     """Divide entre mil y redondea a dos decimales."""
     assert a_miles(1_000_000) == 1000.0
     assert a_miles(None) is None
+
+
+def test_enumerar_con_un_elemento_devuelve_el_valor():
+    """Una hoja de indicadores se nombra sola."""
+    assert enumerar(["Indicadores 2026"]) == "Indicadores 2026"
+
+
+def test_enumerar_con_dos_elementos_usa_e_verbatim():
+    """Reproduce el texto actual del libro: «… e …»."""
+    assert (
+        enumerar(["Indicadores 2026", "Indicadores 2025"])
+        == "Indicadores 2026 e Indicadores 2025"
+    )
+
+
+def test_enumerar_con_tres_elementos_separa_con_comas_y_e():
+    """Tres o más valores van con comas y «e» antes del último."""
+    assert enumerar(["A", "B", "C"]) == "A, B e C"
+
+
+def test_enumerar_con_lista_vacia_devuelve_vacio():
+    """Sin valores no hay nada que listar."""
+    assert enumerar([]) == ""

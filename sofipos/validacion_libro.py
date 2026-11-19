@@ -12,6 +12,17 @@ from .estilos import FILA_DATOS, FILA_ENC, FMT_FECHA
 from .fichas import FICHAS, FICHAS_SEMAFORO, TOTAL_REGLAS
 
 
+def hojas_esperadas(filas: dict[int, list[dict]]) -> list[str]:
+    """Hojas esperadas en orden, derivadas de los años de ``filas``."""
+    anios = sorted(filas, reverse=True)
+    return (
+        ["Catálogo SOFIPOS"]
+        + [f"Datos Fuente {a}" for a in anios]
+        + [f"Indicadores {a}" for a in anios]
+        + ["Diccionario", "Semáforos"]
+    )
+
+
 def validar_libro(
     ruta: Path,
     universo: list[dict],
@@ -38,15 +49,7 @@ def validar_libro(
     print(f"  hojas: {wb.sheetnames}")
 
     # Comprueba que las hojas estén presentes y en el orden esperado.
-    esperadas = [
-        "Catálogo SOFIPOS",
-        "Datos Fuente 2026",
-        "Datos Fuente 2025",
-        "Indicadores 2026",
-        "Indicadores 2025",
-        "Diccionario",
-        "Semáforos",
-    ]
+    esperadas = hojas_esperadas(filas)
     if wb.sheetnames != esperadas:
         print(f"  ERROR: se esperaban {esperadas}.")
         ok = False

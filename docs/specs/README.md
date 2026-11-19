@@ -20,6 +20,7 @@ docs/specs/NNN-slug-de-la-spec/
 | Spec | Estado |
 | --- | --- |
 | [001-tests-y-pyproject](001-tests-y-pyproject/spec.md) | terminada |
+| [002-anios-unico-fuente](002-anios-unico-fuente/spec.md) | terminada |
 
 Estados: `borrador` → `aprobada` → `en implementación` → `revisada` → `terminada`.
 

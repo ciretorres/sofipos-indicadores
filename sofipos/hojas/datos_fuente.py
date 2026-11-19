@@ -137,20 +137,22 @@ def escribir_datos_fuente(
         "n.d. = no disponible: la entidad no operaba o no reportó ese concepto en el mes. "
         "No se imputan ceros.",
     ]
-    notas_2026 = notas_comunes + [
-        "Agosto de 2026 es el corte más reciente del tablero y está INCOMPLETO: Nu México "
-        "(027014) todavía no reporta ese mes y Capital Neto / Requerimiento no se publican para "
-        "agosto, por lo que NICAP y los indicadores que dependen de ellos aparecen como n.d.",
-        "La serie del tablero está reexpresada. Por eso las cifras de 2025 pueden diferir de los "
-        "boletines BE_SOFIPOS_2025 que se usaron antes; se conserva la serie revisada de la CNBV.",
-    ]
-    notas_2025 = notas_comunes + [
-        "En 2025 varias entidades aún no iniciaban operaciones (Impulso 027040, Trafalgar 027052 y "
-        "Acción y Evolución 027028): sus celdas aparecen como n.d. hasta que el tablero las reporta.",
-        "La serie del tablero está reexpresada. Por eso las cifras de 2025 pueden diferir de los "
-        "boletines BE_SOFIPOS_2025 que se usaron antes; se conserva la serie revisada de la CNBV.",
-    ]
-    notas = notas_2026 if anio == 2026 else notas_2025
+    notas_por_anio = {
+        2026: [
+            "Agosto de 2026 es el corte más reciente del tablero y está INCOMPLETO: Nu México "
+            "(027014) todavía no reporta ese mes y Capital Neto / Requerimiento no se publican para "
+            "agosto, por lo que NICAP y los indicadores que dependen de ellos aparecen como n.d.",
+            "La serie del tablero está reexpresada. Por eso las cifras de 2025 pueden diferir de los "
+            "boletines BE_SOFIPOS_2025 que se usaron antes; se conserva la serie revisada de la CNBV.",
+        ],
+        2025: [
+            "En 2025 varias entidades aún no iniciaban operaciones (Impulso 027040, Trafalgar 027052 y "
+            "Acción y Evolución 027028): sus celdas aparecen como n.d. hasta que el tablero las reporta.",
+            "La serie del tablero está reexpresada. Por eso las cifras de 2025 pueden diferir de los "
+            "boletines BE_SOFIPOS_2025 que se usaron antes; se conserva la serie revisada de la CNBV.",
+        ],
+    }
+    notas = notas_comunes + notas_por_anio.get(anio, [])
     _notas(ws, ncols, ultima + 2, notas)
 
     # Ajusta el ancho de las columnas.

@@ -396,11 +396,11 @@ ANIOS = {2025: tuple(range(1, 13)), 2026: tuple(range(1, 9))}   # 8 = agosto
 
 ### Un año nuevo
 
-Agrega el año a `ANIOS` (en `sofipos/config.py`) y crea la hoja
-correspondiente. El generador arma las hojas de datos e indicadores con el
-mismo código (`sofipos/hojas/datos_fuente.py` y `sofipos/hojas/indicadores.py`
-reciben el año). Habrá que agregar la llamada en `sofipos/hojas/__init__.py`
-(`escribir_xlsx`) y el nombre esperado en `sofipos/validacion_libro.py`.
+Agrega el año a `ANIOS` (en `sofipos/config.py`) y listo: las hojas de datos e
+indicadores, la validación del libro y los textos (título, notas del
+catálogo) se derivan de `ANIOS`. Si el año tiene notas específicas,
+agrégalas a `notas_por_anio` en `sofipos/hojas/datos_fuente.py`; si no, el
+año corre solo con las notas comunes.
 
 ### Una SOFIPO nueva
 

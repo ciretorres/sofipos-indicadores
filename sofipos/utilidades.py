@@ -85,6 +85,16 @@ def fecha_anterior(fecha: str) -> str:
     return f"{anio}{mes:02d}"
 
 
+def enumerar(valores) -> str:
+    """Une valores con comas y «e» antes del último (2 o más)."""
+    v = list(valores)
+    if not v:
+        return ""
+    if len(v) == 1:
+        return v[0]
+    return ", ".join(v[:-1]) + " e " + v[-1]
+
+
 def a_miles(valor):
     """Convierte pesos a miles de pesos y redondea a dos decimales.
 
