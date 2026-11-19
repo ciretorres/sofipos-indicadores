@@ -22,6 +22,7 @@ sofipos-indicadores/
 ├── salidas/                                  libro generado (no versionado)
 │   └── SOFIPOS_2026_Datos.xlsx               7 hojas
 ├── generar_sofipos_2026.py                   punto de entrada (wrapper)
+├── pyproject.toml                            metadatos, dependencias, CLI y pytest
 ├── sofipos/                                  todo el código del generador
 │   ├── __main__.py                           permite `python -m sofipos`
 │   ├── main.py                               CLI (argparse) y orquestación
@@ -45,7 +46,14 @@ sofipos-indicadores/
 │   └── validacion_libro.py                   valida el .xlsx generado
 ├── scripts/
 │   └── comparar.py                           compara dos libros y dos stdout
-├── requirements.txt
+├── tests/
+│   ├── fixtures/
+│   │   └── tablero_mini.csv                  CSV mini versionado (no usa entradas/)
+│   ├── test_config.py
+│   ├── test_filas.py
+│   ├── test_semaforos.py
+│   ├── test_tablero.py
+│   └── test_utilidades.py
 └── README.md
 ```
 
@@ -64,8 +72,9 @@ las instrucciones de [`entradas/README.md`](entradas/README.md).
 
 ## Requisitos
 
-- Python 3.9 o superior. En Windows usa `python`; en macOS y Linux, `python3`.
-- [`openpyxl`](https://openpyxl.readthedocs.io/) 3.1+ (ver `requirements.txt`)
+- Python 3.11 o superior. En Windows usa `python`; en macOS y Linux, `python3`.
+- [`openpyxl`](https://openpyxl.readthedocs.io/) 3.1+ (las dependencias viven
+  en `pyproject.toml`)
 
 ## Instalación
 
@@ -93,14 +102,23 @@ python3 -m venv .venv
 **Windows**:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ```
 
 **macOS / Linux**:
 
 ```bash
-.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -e ".[dev]"
 ```
+
+## Pruebas
+
+```bash
+.venv/bin/python -m pytest
+```
+
+Los tests (en `tests/`) usan fixtures CSV versionados y no requieren las
+carpetas `entradas/` ni `salidas/`.
 
 ## Uso
 
