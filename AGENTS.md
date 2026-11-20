@@ -75,7 +75,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 which uvx   # → ~/.local/bin/uvx
 ```
 
-La config usa la **ruta explícita** `%USERPROFILE%\.local\bin\uvx.exe` o `{env:HOME}/.local/bin/uvx`.
+La config usa la **ruta explícita** `{env:USERPROFILE}/.local/bin/uvx.exe` o `{env:HOME}/.local/bin/uvx`.
 
 ### Reviewer
 

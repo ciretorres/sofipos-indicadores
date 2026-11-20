@@ -47,7 +47,7 @@ MES_NUM = {nombre: numero for numero, nombre in MESES.items()}
 ANIOS = {
     2024: tuple(range(1, 13)),
     2025: tuple(range(1, 13)),
-    2026: tuple(range(1, 9)),
+    2026: tuple(range(1, 10)),
 }
 
 # Relaciona las claves CNBV del tablero con los nombres internos de los campos.

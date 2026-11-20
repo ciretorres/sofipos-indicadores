@@ -25,7 +25,7 @@ Reemplazar el bloque `mcp` y sus comentarios por:
   // (Ventura) realpath está en /bin/realpath y `uvx excel-mcp-server` funciona directo.
   //
   // Windows: si {env:HOME} no aplica, sustituir por la ruta literal de uvx
-  // (%USERPROFILE%\.local\bin\uvx.exe) o dejar `uvx` si está en el PATH del servicio.
+  // ({env:USERPROFILE}/.local/bin/uvx.exe) o dejar `uvx` si está en el PATH del servicio.
   "mcp": {
     "servers": {
       "excel": {

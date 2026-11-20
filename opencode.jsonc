@@ -5,14 +5,14 @@
   "default_agent": "plan",
 
   // MCP de Excel (openpyxl, no requiere Excel instalado; funciona en macOS, Windows y Linux)
-  // Windows: si {env:HOME} no aplica, sustituir por la ruta literal de uvx
-  // (%USERPROFILE%\.local\bin\uvx.exe) o dejar `uvx` si está en el PATH del servicio.
+  // Windows: si {env:HOME}/.local/bin/uvx no aplica, sustituir por la ruta literal de uvx
+  // {env:USERPROFILE}/.local/bin/uvx.exe o dejar `uvx` si está en el PATH del servicio.
   "mcp": {
     "servers": {
       "excel": {
         "type": "local",
         "command": [
-          "{env:HOME}/.local/bin/uvx",
+          "{env:USERPROFILE}/.local/bin/uvx.exe",
           "excel-mcp-server",
           "stdio",
           "--allow-dir",
