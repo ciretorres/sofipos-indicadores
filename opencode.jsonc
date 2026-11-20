@@ -12,7 +12,7 @@
       "excel": {
         "type": "local",
         "command": [
-          "{env:USERPROFILE}/.local/bin/uvx.exe",
+          "{env:HOME}/.local/bin/uvx",
           "excel-mcp-server",
           "stdio",
           "--allow-dir",
