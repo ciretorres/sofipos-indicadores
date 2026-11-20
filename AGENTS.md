@@ -49,9 +49,45 @@ archivos `.py`, `pyflakes` debe salir limpio. Detalle en README §
 
 ## MCP de Excel
 
-`opencode.jsonc` conecta el MCP de Excel sobre `entradas/` y `salidas/`. Los `.xlsx` de la CNBV
-traen relaciones `../customXml/…` fuera del paquete: `describe_workbook` falla con ellos (usa
-`read_range` o openpyxl directo); los libros de `salidas/` se leen completos.
+### Qué es / dónde se configura
+
+`opencode.jsonc` conecta un servidor MCP de Excel (`excel-mcp-server`, sobre
+openpyxl; no requiere Excel instalado) con acceso a `entradas/` y `salidas/`.
+Sirve de referencia también para Claude Code.
+
+### Requisito: uv
+
+El servidor se lanza con `uvx`. Instalar uv:
+
+
+#### Windows (PowerShell)
+
+```bash
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+(Get-Command uvx).Source   # → %USERPROFILE%\.local\bin\uvx.exe
+```
+
+#### macOS / Linux
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh      
+# Windows: instalador de https://docs.astral.sh/uv/getting-started/installation/
+which uvx   # → ~/.local/bin/uvx
+```
+
+La config usa la **ruta explícita** `%USERPROFILE%\.local\bin\uvx.exe` o `{env:HOME}/.local/bin/uvx`.
+
+### Reviewer
+
+El subagente `reviewer` usa las tools de solo lectura del MCP (`read_range`,
+`describe_sheet`); las de escritura están bloqueadas en
+`.opencode/agents/reviewer.md`.
+
+### Nota CNBV (customXml)
+
+Los `.xlsx` de la CNBV traen relaciones `../customXml/…` fuera del paquete:
+`describe_workbook` falla con ellos (usa `read_range` o openpyxl directo); los
+libros de `salidas/` se leen completos.
 
 ## Estilo
 

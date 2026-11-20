@@ -23,6 +23,22 @@ permissions:
   - action: subagent
     resource: "*"
     effect: deny
+  # Tools del MCP excel: solo lectura
+  - action: "excel_*"
+    resource: "*"
+    effect: deny
+  - action: excel_describe_workbook
+    resource: "*"
+    effect: allow
+  - action: excel_describe_sheet
+    resource: "*"
+    effect: allow
+  - action: excel_read_range
+    resource: "*"
+    effect: allow
+  - action: excel_list_workbooks
+    resource: "*"
+    effect: allow
 ---
 
 Eres el revisor. Solo lees: no edites archivos.
@@ -32,4 +48,5 @@ Eres el revisor. Solo lees: no edites archivos.
 - Reporta hallazgos ordenados por severidad (crítico → mayor → menor → nota), cada uno con archivo:línea y una razón concreta.
 - Valida contra la spec: ¿cumple los Success Criteria? ¿salta algo de Boundaries? ¿hay tareas de `task.md` sin `[x]`?
 - Si no hay hallazgos, dilo explícitamente: "Sin hallazgos".
+- Si el MCP de Excel está disponible, usa sus tools de solo lectura (`read_range`, `describe_sheet`) para cotejar el libro y los `.xlsx` de `entradas/`; con `describe_workbook` fallan los archivos de la CNBV (customXml).
 - No propongas reescrituras grandes: señala lo que viola la spec o introduce una regresión.

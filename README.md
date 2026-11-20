@@ -1,7 +1,7 @@
 # SOFIPOS · Generador de datos e indicadores
 
 Programa que arma un solo libro de Excel con las 35 sociedades financieras
-populares (SOFIPO) en operación: catálogo, cifras mensuales de 2025 y 2026,
+populares (SOFIPO) en operación: catálogo, cifras mensuales por año,
 indicadores, diccionario y semáforos.
 
 Todas las cifras financieras provienen del **tablero mensual de la CNBV**. Del
@@ -79,7 +79,7 @@ las instrucciones de [`entradas/README.md`](entradas/README.md).
 ## Instalación
 
 ```bash
-git clone https://github.com/<tu-usuario>/sofipos-indicadores.git
+git clone https://github.com/ciretorres/sofipos-indicadores.git
 cd sofipos-indicadores
 ```
 
@@ -110,6 +110,12 @@ python3 -m venv .venv
 ```bash
 .venv/bin/pip install -e ".[dev]"
 ```
+
+### MCP de Excel (opcional)
+
+Para que OpenCode o Claude Code lean los `.xlsx` con el MCP de Excel se
+instala `uv` (comando en `AGENTS.md` § MCP de Excel); el generador no lo
+necesita.
 
 ## Pruebas
 
@@ -144,14 +150,12 @@ repositorio:
 **Windows**:
 
 ```powershell
-.venv\Scripts\python.exe generar_sofipos_2026.py
 .venv\Scripts\python.exe -m sofipos
 ```
 
 **macOS / Linux**:
 
 ```bash
-.venv/bin/python generar_sofipos_2026.py
 .venv/bin/python -m sofipos
 ```
 
@@ -180,15 +184,10 @@ Opciones (iguales en las dos formas):
 | Hoja | Contenido |
 |---|---|
 | `Catálogo SOFIPOS` | 35 entidades: No., Clave CASFIM, SOFIPO, Federación, Entidad Legal, Sitio Web, Fecha de Autorización, Nivel, Estatus |
-| `Datos Fuente 2026` | Enero–agosto 2026 · 8 meses × 35 = 280 filas |
-| `Datos Fuente 2025` | Enero–diciembre 2025 · 12 meses × 35 = 420 filas |
-| `Indicadores 2026` | 280 filas, todas por fórmula contra `Datos Fuente 2026` |
-| `Indicadores 2025` | 420 filas, todas por fórmula contra `Datos Fuente 2025` |
+| `Datos Fuente AAAA` | Activos Totales, Cartera Actual, Cartera Vencida, Cartera Total, Estimaciones Preventivas, Cartera Neta, Ingresos por Intereses, Gastos por Intereses, Margen Financiero, Gastos de Administración, Resultado Neto, Captación Tradicional, Captación del mes anterior, Captación total del mes anterior, Capital Neto, Requerimiento de Capital, NICAP, Resultado Neto 12M, Activo Promedio 12M, Capital Contable Promedio 12M |
+| `Indicadores AAAA` | Todas por fórmula contra `Datos Fuente AAAA`: NICAP, IMOR, ICOR, ROA, ROE, Margen Financiero, Crecimiento de Captación, Crecimiento de Cartera, Resultado Neto, Crédito Neto, % Gastos de Administración |
 | `Diccionario` | 11 indicadores: fórmula, grupo de razón financiera y descripción |
 | `Semáforos` | 10 bloques y 31 reglas de formato condicional |
-
-Las dos hojas de datos tienen exactamente las mismas columnas, y las dos de
-indicadores también: el año cambia, la estructura no.
 
 ## Fuente: tablero de la CNBV
 
@@ -263,7 +262,7 @@ lo indican.
 - Las estimaciones preventivas conservan el signo reportado por la CNBV
   (registro de activo con saldo acreedor).
 
-### Columnas de `Datos Fuente 2026` y `Datos Fuente 2025`
+### Columnas de `Datos Fuente AAAA`
 
 | Col | Campo | Tipo |
 |---|---|---|
@@ -289,28 +288,28 @@ lo indican.
 | X | Activo promedio 12M | dato |
 | Y | Capital contable promedio 12M | dato |
 
-### Columnas de `Indicadores 2026` y `Indicadores 2025`
+### Columnas de `Indicadores AAAA`
 
 | Col | Indicador | Fórmula |
 |---|---|---|
-| F | NICAP | `Datos Fuente!V` (parámetro) |
-| G | IMOR | `H / I` |
-| H | ICOR | `ABS(J) / H` |
-| I | ROA | `W / X` |
-| J | ROE | `W / Y` |
-| K | Margen Financiero | `N / L` |
-| L | Crecimiento de Captación | `Q / R − 1` |
-| M | Crecimiento de Cartera | `I / S − 1` |
-| N | Resultado Neto | `Datos Fuente!P` (parámetro, miles) |
-| O | Crédito Neto | `K / F` |
-| P | % Gastos de Administración | `O / N`, con `n.a.` si el margen es ≤ 0 |
+| F | 🏦 NICAP | `Datos Fuente!V` (parámetro) |
+| G | 📉 IMOR | `H / I` |
+| H | 📉 ICOR | `ABS(J) / H` |
+| I | 💰 ROA | `W / X` |
+| J | 💰 ROE | `W / Y` |
+| K | 💰 Margen Financiero | `N / L` |
+| L | 📈 Crecimiento de Captación | `Q / R − 1` |
+| M | 📈 Crecimiento de Cartera | `I / S − 1` |
+| N | 💰 Resultado Neto | `Datos Fuente!P` (parámetro, miles) |
+| O | 📊 Crédito Neto | `K / F` |
+| P | ⚙️ % Gastos de Administración | `O / N`, con `n.a.` si el margen es ≤ 0 |
 
 Todas son fórmulas que apuntan a la hoja de datos del mismo año, en la misma
 fila.
 
 ## Semáforos
 
-| Indicador | Verde | Amarillo | Rojo |
+| Indicador | Verde 🟢 | Amarillo 🟡 | Rojo 🔴 |
 |---|---|---|---|
 | NICAP | ≥ 141% | 130% – < 141% | < 130% |
 | IMOR | < 5% | 5% – 10% | > 10% |
@@ -401,6 +400,10 @@ indicadores, la validación del libro y los textos (título, notas del
 catálogo) se derivan de `ANIOS`. Si el año tiene notas específicas,
 agrégalas a `notas_por_anio` en `sofipos/hojas/datos_fuente.py`; si no, el
 año corre solo con las notas comunes.
+
+```python
+ANIOS = {2024: tuple(range(1, 13)), 2025: tuple(range(1, 13)), 2026: tuple(range(1, 9))}   # 8 = agosto
+```
 
 ### Una SOFIPO nueva
 

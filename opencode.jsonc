@@ -2,25 +2,18 @@
   "$schema": "https://opencode.ai/config.json",
 
   // Agente principal: orquesta el flujo spec-driven con planner, reviewer e implementer
-  "default_agent": "coordinador",
+  "default_agent": "plan",
 
   // MCP de Excel (openpyxl, no requiere Excel instalado; funciona en macOS, Windows y Linux)
-  // Requiere uv: https://docs.astral.sh/uv/getting-started/installation/
-  // Se lanza como "python -m excel_mcp" porque el script generador del paquete
-  // usa `realpath`, que no existe en macOS 12 (Monterey).
+  // Windows: si {env:HOME} no aplica, sustituir por la ruta literal de uvx
+  // (%USERPROFILE%\.local\bin\uvx.exe) o dejar `uvx` si está en el PATH del servicio.
   "mcp": {
     "servers": {
       "excel": {
         "type": "local",
         "command": [
-          "uv",
-          "run",
-          "--no-project",
-          "--with",
+          "{env:HOME}/.local/bin/uvx",
           "excel-mcp-server",
-          "python",
-          "-m",
-          "excel_mcp",
           "stdio",
           "--allow-dir",
           "entradas",
