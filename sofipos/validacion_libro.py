@@ -1,4 +1,4 @@
-"""Validaciones estructurales y de formato del libro Excel generado."""
+"""Validaciones de estructura, contenido y formato del libro Excel generado."""
 
 from __future__ import annotations
 
@@ -13,7 +13,10 @@ from .fichas import FICHAS, FICHAS_SEMAFORO, TOTAL_REGLAS
 
 
 def hojas_esperadas(filas: dict[int, list[dict]]) -> list[str]:
-    """Hojas esperadas en orden, derivadas de los años de ``filas``."""
+    """Devuelve los nombres de las hojas esperadas y su orden.
+
+    El orden se deriva de los años presentes en ``filas``, de mayor a menor.
+    """
     anios = sorted(filas, reverse=True)
     return (
         ["Catálogo SOFIPOS"]
@@ -28,19 +31,21 @@ def validar_libro(
     universo: list[dict],
     filas: dict[int, list[dict]],
 ) -> bool:
-    """Comprueba la estructura, el contenido y el formato del libro generado.
+    """Valida la estructura, el contenido y el formato del libro Excel.
 
-    Valida las hojas esperadas, la cantidad y alineación de filas, las fórmulas,
-    los formatos de fecha, el diccionario, los semáforos y sus reglas de formato
-    condicional.
+    Comprueba las hojas esperadas, las filas del catálogo y de cada año, la
+    alineación de datos, algunas fórmulas y encabezados, el diccionario, los
+    bloques de semáforos y las reglas de formato condicional. Imprime un
+    resumen de las comprobaciones.
 
     Args:
         ruta: Ruta del archivo Excel que se validará.
-        universo: Sociedades que deben aparecer en el catálogo y por mes.
+        universo: Sociedades que deben aparecer en el catálogo. Las filas
+            mensuales se cuentan a partir de ``filas`` e incluyen las bajas.
         filas: Registros preparados, agrupados por año.
 
     Returns:
-        ``True`` si todas las comprobaciones pasan; de lo contrario, ``False``.
+        ``True`` si pasan todas las comprobaciones; de lo contrario, ``False``.
     """
     ok = True
     wb = load_workbook(ruta)
@@ -122,20 +127,22 @@ def validar_libro(
         if desalineadas:
             ok = False
 
-        # Comprueba que haya una fila por sociedad en cada mes.
+        # Comprueba que haya una fila por sociedad en cada mes. El conteo se
+        # deriva de las claves distintas de ``filas`` (incluye las bajas).
         meses = {}
         for r in range(FILA_DATOS, FILA_DATOS + len(lista)):
             mes = datos.cell(row=r, column=4).value
             meses[mes] = meses.get(mes, 0) + 1
 
+        esperado = len({f["clave"] for f in lista})
         malos = {
             mes: cantidad
             for mes, cantidad in meses.items()
-            if cantidad != len(universo)
+            if cantidad != esperado
         }
         print(
             f"    meses: {len(meses)} · "
-            f"{'35 entidades por mes' if not malos else malos}"
+            f"{'todas con ' + str(esperado) if not malos else malos}"
         )
         if malos:
             ok = False

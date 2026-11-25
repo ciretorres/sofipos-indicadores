@@ -1,16 +1,26 @@
-"""Validaciones cruzadas de los datos antes de generar el libro."""
+"""Validaciones de cobertura y consistencia de los datos del libro."""
 
 from __future__ import annotations
 
 from .be import Boletin
-from .config import ANIOS, MESES, MES_NUM
+from .config import MESES, MES_NUM
 from .tablero import Tablero
 from .utilidades import fecha_mes
 
 
 def _num(x) -> bool:
-    """Indica si el valor es un número entero o decimal."""
+    """Indica si ``x`` es un entero o un decimal."""
     return isinstance(x, (int, float))
+
+
+def _tolera_dif(dif: float, publicado: float) -> bool:
+    """Indica si una diferencia cabe en el margen de NICAP/IMOR/ICOR.
+
+    Tolera la absoluta de redondeo (0.02 pts) o una relativa al valor
+    publicado (1e-5), para no marcar como falla una diferencia grande
+    causada por un valor publicado enorme (caso Stori 027032, mayo 2024).
+    """
+    return dif <= 0.02 or dif <= 1e-5 * abs(publicado)
 
 
 def validar_datos(
@@ -19,21 +29,23 @@ def validar_datos(
     universo: list[dict],
     be_por_archivo: dict[str, Boletin],
 ) -> bool:
-    """Valida la cobertura y consistencia de los datos preparados.
+    """Valida la cobertura y consistencia de los datos del libro.
 
-    Comprueba la cantidad de sociedades por mes, compara los totales del
-    tablero con la suma de las sociedades y contrasta los datos e indicadores
-    con los boletines y valores publicados.
+    Comprueba que cada mes incluya todas las sociedades del universo y
+    compara los totales, datos de boletines e indicadores calculados con
+    sus valores de referencia.
 
     Args:
-        tablero: Datos originales del tablero.
-        filas: Filas preparadas, agrupadas por año.
-        universo: Sociedades que deben incluirse en el libro.
-        be_por_archivo: Boletines disponibles para comparar con el tablero.
+        tablero: Datos originales del tablero, incluidos los valores por
+            entidad y los totales del sector.
+        filas: Filas preparadas para el libro, agrupadas por año.
+        universo: Sociedades que deben aparecer en cada mes.
+        be_por_archivo: Boletines disponibles, indexados por nombre de
+            archivo.
 
     Returns:
-        ``True`` si no se detectan diferencias fuera de los márgenes
-        establecidos; de lo contrario, ``False``.
+        ``True`` si todas las validaciones pasan; ``False`` si se detecta
+        una diferencia fuera de los márgenes aceptados.
     """
     ok = True
     print("\n=== Validación de datos ===")
@@ -86,8 +98,9 @@ def validar_datos(
         comparaciones = 0
         peor = 0.0
 
-        for anio in ANIOS:
-            for mes in ANIOS[anio]:
+        # Los meses salen de las filas del libro, no de la config completa.
+        for anio, lista in filas.items():
+            for mes in sorted({MES_NUM[f["mes"]] for f in lista}):
                 fecha = fecha_mes(anio, mes)
                 esperado = tablero.sector.get((fecha, campo))
                 if esperado is None:
@@ -110,8 +123,7 @@ def validar_datos(
             f"peor diferencia {peor:,.2f} pesos · {estado}"
         )
 
-    # Contrasta siete conceptos con los boletines BE disponibles.
-    print("\n  Tablero vs boletín BE (marzo y junio 2026, miles de pesos):")
+    # Contrasta siete conceptos con los boletines BE de los años del libro.
     pares = [
         ("activos", "activos", "Activos"),
         ("cartera_e12", "cartera_1_2", "Cartera E1+E2"),
@@ -123,9 +135,34 @@ def validar_datos(
     ]
     excepciones_be = {("202606", "027019", "gastos_adm")}
 
+    # Sin el año del boletín en el libro no se cruza (--anios sin 2026).
+    boletines = []
     for archivo, boletin in be_por_archivo.items():
         fecha = archivo.split("_")[-1].replace(".xlsx", "")
         anio, mes = int(fecha[:4]), int(fecha[4:])
+        if anio not in filas:
+            continue
+        boletines.append((fecha, anio, mes, boletin))
+
+    if boletines:
+        boletines.sort(key=lambda b: (b[1], b[2]))
+        nombres_meses: list[str] = []
+        for _, _, mes, _ in boletines:
+            nombre = MESES[mes].lower()
+            if nombre not in nombres_meses:
+                nombres_meses.append(nombre)
+        anios_validados = {b[1] for b in boletines}
+        if len(nombres_meses) == 1:
+            lista_meses = nombres_meses[0]
+        elif len(nombres_meses) == 2:
+            lista_meses = " y ".join(nombres_meses)
+        else:
+            lista_meses = ", ".join(nombres_meses[:-1]) + " y " + nombres_meses[-1]
+        if len(anios_validados) == 1:
+            lista_meses = f"{lista_meses} de {next(iter(anios_validados))}"
+        print(f"\n  Tablero vs boletín BE ({lista_meses}, miles de pesos):")
+
+    for fecha, anio, mes, boletin in boletines:
         por_clave = {r["clave"]: r for r in boletin.registros}
         filas_mes = {
             f["clave"]: f
@@ -193,7 +230,11 @@ def validar_datos(
 
     # Accede a los importes originales en pesos para evitar el redondeo a miles.
     def crudo(f):
-        """Devuelve los valores originales del tablero para una fila preparada."""
+        """Obtiene los valores originales del tablero para una fila.
+
+        Busca los datos usando la clave de la sociedad y la fecha de la fila.
+        Devuelve un diccionario vacío si no encuentra esa combinación.
+        """
         return tablero.valores.get(
             (f["clave"], fecha_mes(f["anio"], MES_NUM[f["mes"]])),
             {},
@@ -274,6 +315,10 @@ def validar_datos(
         comparaciones = 0
         peor = 0.0
         peor_fila = None
+        # Peor diferencia que NO pasa la tolerancia (la falla se decide
+        # por comparación: una dif grande tolerada no oculta una chica).
+        peor_falla = 0.0
+        peor_falla_fila = None
 
         for anio, lista in filas.items():
             for f in lista:
@@ -297,15 +342,22 @@ def validar_datos(
                 comparaciones += 1
                 if dif > peor:
                     peor, peor_fila = dif, f
+                if not _tolera_dif(dif, f[campo_pub]) and dif > peor_falla:
+                    peor_falla, peor_falla_fila = dif, f
 
-        estado = "OK" if peor <= 0.02 else f"DIF {peor:,.4f}"
-        if peor > 0.02:
+        hay_falla = peor_falla_fila is not None
+        if hay_falla:
             ok = False
+        # Al fallar se reporta la peor fuera de tolerancia; al estar OK,
+        # la peor diferencia en general.
+        mostrar = peor_falla if hay_falla else peor
+        mostrar_fila = peor_falla_fila if hay_falla else peor_fila
+        estado = "OK" if not hay_falla else f"DIF {mostrar:,.4f}"
 
         extra = (
-            f" ({peor_fila['clave']} {peor_fila['mes']} "
-            f"{peor_fila['anio']})"
-            if peor_fila
+            f" ({mostrar_fila['clave']} {mostrar_fila['mes']} "
+            f"{mostrar_fila['anio']})"
+            if mostrar_fila
             else ""
         )
         print(

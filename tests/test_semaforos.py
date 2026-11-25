@@ -1,6 +1,6 @@
-"""Pruebas de coherencia entre la hoja «Semáforos», el formato condicional y FICHAS.
+"""Pruebas de coherencia entre «Semáforos», el formato condicional y FICHAS.
 
-Todo se construye en un ``Workbook`` en memoria: no se genera el libro completo.
+Las pruebas usan un Workbook en memoria y no generan el libro completo.
 """
 
 import re
@@ -9,12 +9,13 @@ from types import SimpleNamespace
 import pytest
 from openpyxl import Workbook
 
+from sofipos.config import ANIOS
 from sofipos.estilos import FILA_DATOS
 from sofipos.fichas import COND_NA, FICHAS, FICHAS_SEMAFORO, TOTAL_REGLAS
 from sofipos.hojas.indicadores import aplicar_formato_condicional
 from sofipos.hojas.semaforos import escribir_semaforos
 
-# Referencias de celda (F5): hay que quitarlas antes de extraer números.
+# Patrones para analizar referencias, porcentajes y condiciones de Excel.
 REF = re.compile(r"[A-Z]+\d+")
 PORC = re.compile(r"(\d+(?:\.\d+)?)%")
 NUM = re.compile(r"-?\d+(?:\.\d+)?")
@@ -25,13 +26,14 @@ PREFIJO_NOTA = "Excel (fracción): "
 
 @pytest.fixture(scope="module")
 def libro():
-    """Hoja «Semáforos» y reglas de formato condicional en memoria."""
+    """Prepara la hoja «Semáforos» y las reglas de formato en memoria."""
     wb = Workbook()
-    escribir_semaforos(wb)
+    escribir_semaforos(wb, sorted(ANIOS, reverse=True))
     ws = wb["Semáforos"]
 
     umbrales: list[list[str]] = []
     conds: list[str] = []
+
     for fila in ws.iter_rows(min_col=1, max_col=4):
         valor = fila[0].value
         if valor == "Umbral":
@@ -51,27 +53,27 @@ def libro():
 
 
 def _sin_refs(texto: str) -> str:
-    """Elimina las referencias de celda para no envenenar los números."""
+    """Elimina referencias de celda antes de extraer números."""
     return REF.sub("", texto)
 
 
 def _porcentajes(texto: str) -> set[float]:
-    """Porcentajes citados en un texto, como fracciones (141% → 1.41)."""
+    """Convierte los porcentajes del texto a fracciones; por ejemplo, 141% a 1.41."""
     return {float(x) / 100 for x in PORC.findall(_sin_refs(texto))}
 
 
 def _numeros(texto: str) -> set[float]:
-    """Números de una condición de Excel, sin las referencias de celda."""
+    """Extrae los valores numéricos de una condición, sin referencias de celda."""
     return {float(x) for x in NUM.findall(_sin_refs(texto))}
 
 
 def _desenvuelve(formula: str) -> str:
-    """Quita el envoltorio ``AND(ISNUMBER(<ref>), …)`` de una fórmula CF."""
+    """Retira el envoltorio ``AND(ISNUMBER(<referencia>), ...)`` de una fórmula."""
     return ENVOLTURA.sub(r"\1", formula)
 
 
 def _etiquetas(umbral: list[str]) -> list[str]:
-    """Etiquetas de una fila «Umbral» (celdas verde/amarillo/rojo)."""
+    """Obtiene las etiquetas de las celdas de umbral, separadas por color."""
     return [
         etiqueta
         for celda in umbral
@@ -81,12 +83,12 @@ def _etiquetas(umbral: list[str]) -> list[str]:
 
 
 def _pares(nota: str) -> list[tuple[str, str]]:
-    """Pares (etiqueta, condición) de una nota «Excel (fracción)»."""
-    return [par.split(" → ", 1) for par in nota.split(" · ")]
+    """Separa una nota en pares de etiqueta y condición."""
+    return [tuple(par.split(" → ", 1)) for par in nota.split(" · ")]
 
 
 def _nota_prosa(ws, prefijo: str) -> str:
-    """Devuelve la nota en prosa de la columna A que empieza por el prefijo."""
+    """Busca y devuelve en la columna A la nota que comienza con el prefijo."""
     for fila in ws.iter_rows(min_col=1, max_col=1):
         valor = fila[0].value
         if isinstance(valor, str) and valor.startswith(prefijo):
@@ -95,13 +97,13 @@ def _nota_prosa(ws, prefijo: str) -> str:
 
 
 def test_la_hoja_tiene_un_bloque_por_ficha(libro):
-    """Hay una fila de umbrales y una nota de condiciones por indicador."""
+    """Cada indicador con semáforo tiene umbrales y una nota de condiciones."""
     assert len(libro.umbrales) == len(FICHAS_SEMAFORO)
     assert len(libro.conds) == len(FICHAS_SEMAFORO)
 
 
 def test_etiquetas_conciden_con_condiciones_y_con_formato_condicional(libro):
-    """Por indicador: etiquetas ÷ 100 == números de la condición == fórmulas CF."""
+    """Comprueba que coincidan las etiquetas, las condiciones y las reglas."""
     inicio = 0
     for ficha, umbral, nota in zip(FICHAS_SEMAFORO, libro.umbrales, libro.conds):
         fin = inicio + len(ficha.tramos)
@@ -114,6 +116,7 @@ def test_etiquetas_conciden_con_condiciones_y_con_formato_condicional(libro):
         numeros_nota: set[float] = set()
         for _, condicion in _pares(nota):
             numeros_nota |= _numeros(condicion)
+
         numeros_cf: set[float] = set()
         for formula in bloque:
             numeros_cf |= _numeros(formula)
@@ -123,7 +126,7 @@ def test_etiquetas_conciden_con_condiciones_y_con_formato_condicional(libro):
 
 
 def test_condiciones_de_la_nota_son_verbatim_a_las_formulas_cf(libro):
-    """La nota «Excel (fracción)» es idéntica a la fórmula CF desenvuelta."""
+    """Las condiciones de la nota coinciden con las fórmulas de formato."""
     inicio = 0
     for ficha, nota in zip(FICHAS_SEMAFORO, libro.conds):
         fin = inicio + len(ficha.tramos)
@@ -136,25 +139,26 @@ def test_condiciones_de_la_nota_son_verbatim_a_las_formulas_cf(libro):
 
 
 def test_numero_de_reglas_cf_es_total_reglas(libro):
-    """El formato condicional define exactamente ``TOTAL_REGLAS`` reglas."""
+    """El formato condicional contiene exactamente ``TOTAL_REGLAS`` reglas."""
     assert TOTAL_REGLAS == 31
     assert len(libro.formulas) == TOTAL_REGLAS
 
 
 def test_tramo_na_no_tiene_numeros(libro):
-    """El tramo n.a. solo exige el texto «n.a.»; su etiqueta lo menciona."""
+    """El tramo «n.a.» verifica texto y no incluye límites numéricos."""
     idx = [f.indicador for f in FICHAS_SEMAFORO].index(
         "% Gastos de Administración"
     )
     ficha = FICHAS_SEMAFORO[idx]
     etiqueta, condicion = _pares(libro.conds[idx])[-1]
+
     assert "n.a." in etiqueta
     assert condicion == COND_NA.format(c=ficha.columna + str(FILA_DATOS))
     assert _numeros(condicion) == set()
 
 
 def test_notas_en_prosa_coinciden_con_los_tramos(libro):
-    """NICAP, Crédito Neto y % Gastos citan los números de sus fichas."""
+    """Las notas de NICAP, Crédito Neto y Gastos citan sus límites."""
     for prefijo, indicador in (
         ("NICAP: ", "NICAP"),
         ("Crédito Neto: ", "Crédito Neto"),
@@ -164,13 +168,15 @@ def test_notas_en_prosa_coinciden_con_los_tramos(libro):
         numeros: set[float] = set()
         for _, condicion, _ in ficha.tramos:
             numeros |= _numeros(condicion)
+
         assert _porcentajes(_nota_prosa(libro.ws, prefijo)) == numeros
 
 
 def test_limite_superior_amarillo_de_seis_indicadores(libro):
-    """La nota cita en orden los límites superiores de seis tramos amarillos."""
+    """La nota enumera en orden los límites superiores de seis tramos amarillos."""
     nota = _nota_prosa(libro.ws, "IMOR, ICOR, ROA, ROE")
     esperado = []
+
     for indicador in (
         "IMOR",
         "ICOR",
@@ -189,8 +195,9 @@ def test_limite_superior_amarillo_de_seis_indicadores(libro):
 
 
 def test_resultado_neto_no_tiene_semaforo(libro):
-    """La ficha «Resultado Neto» no define tramos y la hoja lo advierte."""
+    """Comprueba que Resultado Neto no tenga tramos y que la hoja lo indique."""
     ficha = next(f for f in FICHAS if f.indicador == "Resultado Neto")
+
     assert ficha.tramos == ()
     assert ficha not in FICHAS_SEMAFORO
     assert "Resultado Neto NO tiene semáforo" in _nota_prosa(

@@ -1,10 +1,9 @@
-"""Funciones para crear la hoja de diccionario de indicadores."""
+"""Funciones para crear y dar formato a la hoja «Diccionario»."""
 
 from __future__ import annotations
 
 from openpyxl import Workbook
 
-from ..config import ANIOS
 from ..estilos import (
     ENC_DICCIONARIO,
     FILA_DATOS,
@@ -20,14 +19,17 @@ from ..fichas import FICHAS
 from ..utilidades import enumerar
 
 
-def escribir_diccionario(wb: Workbook) -> None:
-    """Crea y da formato a la hoja «Diccionario».
+def escribir_diccionario(wb: Workbook, anios: list[int]) -> None:
+    """Agrega al libro la hoja «Diccionario» con las fichas de indicadores.
 
-    Escribe la definición, fórmula, grupo y descripción de cada indicador.
-    También agrega notas explicativas y configura la presentación de la hoja.
+    Incluye la definición, fórmula, grupo y descripción de cada indicador,
+    además de notas aclaratorias y opciones de presentación para la hoja.
+    Los años recibidos se usan para mencionar las hojas de indicadores
+    correspondientes en el subtítulo.
 
     Args:
-        wb: Libro de Excel al que se agregará la hoja.
+        wb: Libro de Excel al que se agrega la hoja.
+        anios: Años cuyas hojas de indicadores se mencionan en el subtítulo.
     """
     ws = wb.create_sheet("Diccionario")
     ncols = len(ENC_DICCIONARIO)
@@ -38,7 +40,7 @@ def escribir_diccionario(wb: Workbook) -> None:
         "SOCIEDADES FINANCIERAS POPULARES (SOFIPO) · Diccionario de indicadores",
         "Qué mide cada indicador, cómo se calcula y a qué grupo de razón financiera pertenece",
         "Cada renglón corresponde a una columna de las hojas "
-        f"{enumerar([f'Indicadores {a}' for a in sorted(ANIOS, reverse=True)])}. "
+        f"{enumerar([f'Indicadores {a}' for a in anios])}. "
         "Las fórmulas se expresan en función de las columnas de Datos Fuente.",
     )
 

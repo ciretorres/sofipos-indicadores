@@ -17,35 +17,39 @@ from .semaforos import escribir_semaforos
 
 def escribir_xlsx(
     universo: list[dict],
+    bajas: list[dict],
     nombres: dict[str, str],
     filas: dict[int, list[dict]],
     ruta: Path,
 ) -> None:
-    """Genera el libro de Excel y lo guarda en la ruta indicada.
+    """Construye el libro de SOFIPOS y lo guarda en la ruta indicada.
 
-    Crea las hojas del catálogo, los datos fuente, los indicadores, el
-    diccionario y los semáforos de los años en ``filas``. Guarda primero el
-    archivo en un temporal y luego lo mueve a la ruta final.
+    Crea las hojas del catálogo, los datos fuente y los indicadores para cada
+    año de ``filas``, además del diccionario y los semáforos. Guarda el libro
+    en un archivo temporal y luego lo reemplaza por el archivo de destino.
 
     Args:
-        universo: Sociedades incluidas en el libro.
-        nombres: Nombres de las sociedades, indexados por clave.
+        universo: Registros de las sociedades en operación del catálogo.
+        bajas: Registros de sociedades transformadas o revocadas.
+        nombres: Nombres actualizados de las sociedades, indexados por clave.
         filas: Registros mensuales agrupados por año.
         ruta: Ruta de destino del archivo ``.xlsx``.
     """
     anios = sorted(filas, reverse=True)
+    # Las hojas de datos traen a las bajas además de las sociedades activas.
+    n_entidades = len(universo) + len(bajas)
 
     wb = Workbook()
     wb.remove(wb.active)
 
     # Crea las hojas del libro en el orden deseado.
-    escribir_catalogo(wb, universo, nombres)
+    escribir_catalogo(wb, universo, nombres, bajas)
     for a in anios:
-        escribir_datos_fuente(wb, filas[a], a, len(universo))
+        escribir_datos_fuente(wb, filas[a], a, n_entidades)
     for a in anios:
         escribir_indicadores(wb, filas[a], a)
-    escribir_diccionario(wb)
-    escribir_semaforos(wb)
+    escribir_diccionario(wb, anios)
+    escribir_semaforos(wb, anios)
 
     # Añade metadatos al archivo.
     rango = f"{min(anios)}-{max(anios)}" if len(anios) > 1 else str(anios[0])

@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Genera SOFIPOS_2026_Datos.xlsx con la información mensual de las 35 SOFIPOS:
-enero-diciembre de 2025 y enero-agosto de 2026.
+Genera SOFIPOS_Indicadores_Datos.xlsx con la información mensual de las SOFIPOS:
+2024 y 2025 completos (enero-diciembre) y 2026 de enero a septiembre (corte
+30 de septiembre de 2026).
 
 Fuente de las cifras
 --------------------
 Tablero de información financiera de la CNBV, descarga "sh_datos_csv_27_i"
-(serie mensual 201601-202608, saldos sin consolidar, tipo_saldo = 130):
+(serie mensual 201601-202609, saldos sin consolidar, tipo_saldo = 130):
 
   entradas/tablero/sh_datos_csv_27_i/027_datos.csv
   entradas/tablero/sh_datos_csv_27_i/catalogo_conceptos_027.xlsx
@@ -16,19 +17,23 @@ Tablero de información financiera de la CNBV, descarga "sh_datos_csv_27_i"
 El único dato que se sigue tomando del boletín es la hoja "Universo"
 (Federación, Nivel de operación, Fecha de autorización y Estatus):
 
-  entradas/BE_SOFIPOS_202606.xlsx, hoja Universo
+  entradas/BE_SOFIPOS_202609.xlsx, hoja Universo
 
 El CSV viene en pesos; el libro se publica en MILES de pesos.
 
 Hojas del libro
 ---------------
-  1. Catálogo SOFIPOS   -> 35 entidades autorizadas en operación
-  2. Datos Fuente 2026   -> enero-agosto 2026, 35 entidades por mes (280 filas)
+Estructura dinámica: 3 hojas fijas (Catálogo, Diccionario y Semáforos) y 2
+por cada año de ANIOS (Datos Fuente e Indicadores). Con 2024-2026 son 9 hojas.
+  1. Catálogo SOFIPOS   -> 33 sociedades en operación + apartado de bajas
+  2. Datos Fuente 2026   -> enero-septiembre 2026, 35 entidades por mes (315 filas)
   3. Datos Fuente 2025   -> enero-diciembre 2025, 35 entidades por mes (420 filas)
-  4. Indicadores 2026    -> 280 filas, fórmulas contra Datos Fuente 2026
-  5. Indicadores 2025    -> 420 filas, fórmulas contra Datos Fuente 2025
-  6. Diccionario         -> 11 indicadores, fórmula, grupo y descripción
-  7. Semáforos           -> 10 bloques y 31 reglas de formato condicional
+  4. Datos Fuente 2024   -> enero-diciembre 2024, 35 entidades por mes (420 filas)
+  5. Indicadores 2026    -> 315 filas, fórmulas contra Datos Fuente 2026
+  6. Indicadores 2025    -> 420 filas, fórmulas contra Datos Fuente 2025
+  7. Indicadores 2024    -> 420 filas, fórmulas contra Datos Fuente 2024
+  8. Diccionario         -> 11 indicadores, fórmula, grupo y descripción
+  9. Semáforos           -> 10 bloques y 31 reglas de formato condicional
 
 Método
 ------
@@ -50,10 +55,11 @@ Método
 - Cuando la fuente no publica un dato se escribe "n.d."; no se imputan ceros.
 
 Uso (ambas formas son equivalentes y se corren desde la raíz del repo):
-    .venv/bin/python generar_sofipos_2026.py
+    .venv/bin/python generar_sofipos_indicadores.py
     .venv/bin/python -m sofipos
-    .venv/bin/python generar_sofipos_2026.py --entradas otra --salidas otra
-    .venv/bin/python generar_sofipos_2026.py --out otra_ruta.xlsx
+    .venv/bin/python generar_sofipos_indicadores.py --entradas otra --salidas otra
+    .venv/bin/python generar_sofipos_indicadores.py --out otra_ruta.xlsx
+    .venv/bin/python generar_sofipos_indicadores.py --anios 2026
 
 El código vive en el paquete sofipos/; este archivo solo lo invoca.
 """

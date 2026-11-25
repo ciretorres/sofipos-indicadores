@@ -8,7 +8,7 @@ Generador del libro Excel de indicadores de las SOFIPOS (sociedades financieras
 populares). Toma datos crudos de la CNBV (`entradas/`) y arma un único `.xlsx`
 en `salidas/`.
 
-- Entry point: `.venv/bin/python generar_sofipos_2026.py` (o `python -m sofipos`).
+- Entry point: `.venv/bin/python generar_sofipos_indicadores.py` (o `python -m sofipos`).
 - Código: paquete `sofipos/` — `sofipos/hojas/` tiene una carpeta por pestaña del libro.
 - Documentación completa: `README.md` (estructura, método, semáforos, validaciones).
 
@@ -31,11 +31,11 @@ Obligatorio antes de dar una tarea por terminada: el libro debe quedar idéntico
 
 ```bash
 # 1. referencia con el código actual
-.venv/bin/python generar_sofipos_2026.py --out /tmp/sofi.xlsx > /tmp/salida1.txt
+.venv/bin/python generar_sofipos_indicadores.py --out /tmp/sofi.xlsx > /tmp/salida1.txt
 cp /tmp/sofi.xlsx /tmp/referencia.xlsx
 
 # 2. hacer el cambio y volver a generar (misma ruta)
-.venv/bin/python generar_sofipos_2026.py --out /tmp/sofi.xlsx > /tmp/salida2.txt
+.venv/bin/python generar_sofipos_indicadores.py --out /tmp/sofi.xlsx > /tmp/salida2.txt
 
 # 3. comparar
 .venv/bin/python scripts/comparar.py \

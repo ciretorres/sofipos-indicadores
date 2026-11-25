@@ -7,6 +7,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .catalogo import CATALOGO
 from .config import COL_TOTAL_SECTOR, HOJA_BE, HOJA_UNIVERSO
 from .utilidades import _a_numero, _norm, normalizar_clave
 from .xlsx_lector import _abrir_hoja, _columnas_sofipo, _fila_encabezado
@@ -26,28 +27,35 @@ ETIQUETAS_BE = {
 
 @dataclass
 class Boletin:
-    """Contiene los registros, totales y filas de origen de un boletín."""
+    """Almacena los datos extraídos de un boletín.
+
+    Attributes:
+        registros: Datos financieros y de identificación de cada sociedad.
+        totales: Totales del sector por concepto financiero.
+        filas: Número de fila de origen para cada concepto.
+    """
 
     registros: list[dict]
     totales: dict
     filas: dict[str, int] = field(default_factory=dict)
 
 
-def leer_be_sofipos(ruta: Path) -> Boletin:
-    """Lee los datos de SOFIPOS de un boletín de estados financieros.
 
-    Localiza las filas de cada concepto por su etiqueta y extrae los valores
-    por sociedad, junto con los totales del sector.
+def leer_be_sofipos(ruta: Path) -> Boletin:
+    """Lee los conceptos financieros y las sociedades de un boletín.
+
+    Localiza cada concepto por su etiqueta y extrae sus valores por
+    sociedad y los totales del sector.
 
     Args:
-        ruta: Ruta del archivo que contiene el boletín.
+        ruta: Archivo Excel del boletín.
 
     Returns:
-        Un objeto con los registros de las sociedades, los totales y las
-        filas donde se encontraron los conceptos.
+        Datos extraídos, incluidos los números de fila donde se encontró
+        cada concepto.
 
     Raises:
-        SystemExit: Si no se encuentra alguna etiqueta requerida.
+        SystemExit: Si falta una etiqueta financiera requerida.
     """
     hoja = _abrir_hoja(ruta, HOJA_BE)
     fila_enc = _fila_encabezado(hoja, "Clave CASFIM")
@@ -106,10 +114,10 @@ def leer_universo(ruta: Path) -> list[dict]:
     """Lee las sociedades autorizadas que están en operación.
 
     Args:
-        ruta: Ruta del archivo que contiene la hoja del universo.
+        ruta: Archivo Excel que contiene la hoja del universo.
 
     Returns:
-        Lista de sociedades con su clave, nombre, fecha de autorización,
+        Sociedades con su consecutivo, clave, nombre, fecha de autorización,
         nivel, federación y estatus.
     """
     hoja = _abrir_hoja(ruta, HOJA_UNIVERSO)
@@ -160,3 +168,69 @@ def leer_universo(ruta: Path) -> list[dict]:
         )
 
     return registros
+
+
+def leer_bajas(ruta: Path) -> list[dict]:
+    """Lee las sociedades transformadas o revocadas de la hoja Universo.
+
+    Recorre las secciones «Sociedades revocadas» y «Sociedades transformadas»
+    y conserva solo las claves que están en ``CATALOGO`` (el resto de las
+    secciones no son bajas del libro).
+
+    Args:
+        ruta: Ruta del archivo que contiene la hoja del universo.
+
+    Returns:
+        Lista con clave, nombre (sin el marcador de nota al pie), motivo y
+        fecha de cada baja.
+    """
+    hoja = _abrir_hoja(ruta, HOJA_UNIVERSO)
+    seccion = None  # Motivo de la sección actual; ``None`` fuera de ella.
+    bajas = []
+
+    for num in sorted(hoja):
+        fila = hoja[num]
+        titulo = _norm(fila.get("C", ""))
+
+        # Detecta el inicio de cada sección de bajas (o su fin).
+        if titulo.startswith("sociedades revocadas"):
+            seccion = "Revocada"
+            continue
+        if titulo.startswith("sociedades transformadas"):
+            seccion = "Transformada"
+            continue
+        if titulo.startswith("sociedades"):
+            seccion = None
+            continue
+        if seccion is None:
+            continue
+
+        clave_cruda = fila.get("D")
+        if clave_cruda is None or _a_numero(fila.get("C")) is None:
+            continue
+        clave = normalizar_clave(
+            int(clave_cruda) if isinstance(clave_cruda, float) else clave_cruda
+        )
+        if clave not in CATALOGO:
+            continue
+
+        # Quita el marcador de nota al pie del nombre («Nu México 7/»).
+        nombre = re.sub(r"\s*\d+/\s*$", "", str(fila.get("E", "")).strip())
+
+        serial = _a_numero(fila.get("F"))
+        fecha = (
+            dt.date(1899, 12, 30) + dt.timedelta(days=int(serial))
+            if serial
+            else None
+        )
+
+        bajas.append(
+            {
+                "clave": clave,
+                "nombre": nombre,
+                "motivo": str(fila.get("G") or "").strip() or seccion,
+                "fecha": fecha,
+            }
+        )
+
+    return bajas

@@ -1,4 +1,4 @@
-"""Funciones para crear las hojas de datos fuente del libro."""
+"""Funciones para crear y dar formato a las hojas de datos fuente."""
 
 from __future__ import annotations
 
@@ -29,16 +29,17 @@ def escribir_datos_fuente(
     anio: int,
     n_entidades: int,
 ) -> None:
-    """Crea y da formato a la hoja de datos fuente de un año.
+    """Agrega al libro la hoja de datos fuente del año indicado.
 
-    Escribe los datos mensuales de las sociedades, calcula las columnas
-    derivadas mediante fórmulas y agrega notas sobre las fuentes y criterios.
+    Escribe los registros mensuales recibidos, calcula las columnas derivadas
+    con fórmulas de Excel y añade notas sobre las fuentes y los criterios
+    aplicados.
 
     Args:
-        wb: Libro de Excel al que se agregará la hoja.
-        filas: Registros mensuales que se escribirán en la hoja.
-        anio: Año de los datos.
-        n_entidades: Número de sociedades incluidas por mes.
+        wb: Libro de Excel al que se agrega la hoja.
+        filas: Registros mensuales que se escriben en la hoja.
+        anio: Año de los datos; determina el nombre y el periodo de la hoja.
+        n_entidades: Número de sociedades incluidas por mes, mostrado en el título.
     """
     nombre_hoja = f"Datos Fuente {anio}"
     ws = wb.create_sheet(nombre_hoja)
@@ -115,13 +116,15 @@ def escribir_datos_fuente(
         "UNIDADES: todas las columnas monetarias están en MILES DE PESOS. El tablero de la CNBV "
         "publica en pesos; aquí cada importe se dividió entre 1,000.",
         "FUENTE: tablero de información financiera de la CNBV, descarga mensual 027_datos.csv "
-        "(serie 201601–202608), catálogo de conceptos 027 y catálogo de instituciones 027. "
+        "(serie 201601–202609), catálogo de conceptos 027 y catálogo de instituciones 027. "
         "Solo se usan saldos sin consolidar (tipo_saldo = 130).",
         "La fila con institución '27' es el TOTAL DEL SECTOR y se excluye: no es una SOFIPO. "
         "La serie completa del tablero (todas las entidades) coincide con esa fila al peso.",
-        "El libro cubre las 35 sociedades que están 'en operación' en el Universo de junio de "
-        "2026. CAME (027038), revocada el 19 de septiembre de 2025, no se incluye aunque el "
-        "tablero conserve algunos meses suyos.",
+        "El libro cubre 35 sociedades por mes: las 33 que están 'en operación' en el Universo de "
+        "septiembre de 2026 más Nu México (027014, transformada) y Acción y Evolución (027028, "
+        "revocada), que conservan su histórico con n.d. en los meses sin reporte hasta cerrar 2026. "
+        "CAME (027038), revocada el 19 de septiembre de 2025, no se incluye aunque el tablero "
+        "conserve algunos meses suyos.",
         "Los estados de resultados (ingresos, gastos, gastos de administración y resultado neto) "
         "son ACUMULADOS DEL AÑO (YTD), igual que los publica el tablero. No son flujos del mes.",
         "PERIODO ANTERIOR: es el mes inmediato anterior. Enero de 2025 se compara contra diciembre "
@@ -139,9 +142,11 @@ def escribir_datos_fuente(
     ]
     notas_por_anio = {
         2026: [
-            "Agosto de 2026 es el corte más reciente del tablero y está INCOMPLETO: Nu México "
-            "(027014) todavía no reporta ese mes y Capital Neto / Requerimiento no se publican para "
-            "agosto, por lo que NICAP y los indicadores que dependen de ellos aparecen como n.d.",
+            "Septiembre de 2026 es el corte más reciente del tablero: Nu México (027014, "
+            "transformada en agosto de 2026) y Acción y Evolución (027028, revocada en septiembre "
+            "de 2026) dejaron de estar en operación; se conservan en el libro con su histórico y "
+            "n.d. en los meses sin reporte. Capital Neto / Requerimiento no se publican para "
+            "septiembre, por lo que NICAP y los indicadores que dependen de ellos aparecen como n.d.",
             "La serie del tablero está reexpresada. Por eso las cifras de 2025 pueden diferir de los "
             "boletines BE_SOFIPOS_2025 que se usaron antes; se conserva la serie revisada de la CNBV.",
         ],

@@ -9,12 +9,16 @@ from pathlib import Path
 AQUI = Path(__file__).resolve().parent.parent  # Este archivo está en sofipos/.
 DIR_ENTRADAS = AQUI / "entradas"
 DIR_SALIDAS = AQUI / "salidas"
-SALIDA_DEFECTO = DIR_SALIDAS / "SOFIPOS_2026_Datos.xlsx"
+SALIDA_DEFECTO = DIR_SALIDAS / "SOFIPOS_Indicadores_Datos.xlsx"
 
 # Archivos que se leen durante la generación y validación del libro.
-BE_UNIVERSO = "BE_SOFIPOS_202606.xlsx"
+BE_UNIVERSO = "BE_SOFIPOS_202609.xlsx"
 CSV_TABLERO = Path("tablero") / "sh_datos_csv_27_i" / "027_datos.csv"
-BE_VALIDACION = ["BE_SOFIPOS_202603.xlsx", "BE_SOFIPOS_202606.xlsx"]
+BE_VALIDACION = [
+    "BE_SOFIPOS_202603.xlsx",
+    "BE_SOFIPOS_202606.xlsx",
+    "BE_SOFIPOS_202609.xlsx",
+]
 
 # Nombres de las hojas y columna con el total del sector en el boletín.
 HOJA_BE = "Estados_Financieros"

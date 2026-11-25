@@ -10,7 +10,9 @@ entradas/
 │       ├── 027_datos.csv                 serie mensual (en pesos)
 │       ├── catalogo_conceptos_027.xlsx   1,502 conceptos
 │       └── catalogo_instituciones_027.xlsx
-└── BE_SOFIPOS_202606.xlsx                hoja Universo (junio 2026)
+├── BE_SOFIPOS_202609.xlsx                hoja Universo (corte vigente)
+├── BE_SOFIPOS_202603.xlsx                hoja Universo (validación)
+└── BE_SOFIPOS_202606.xlsx                hoja Universo (validación)
 ```
 
 ## Cómo obtenerlos
@@ -38,5 +40,6 @@ entradas/
   convierte a **miles de pesos**.
 - Solo se usan saldos **sin consolidar** (`tipo_saldo = 130`).
 - La fila con `institucion = 27` es el total del sector y se excluye.
-- Si actualizas el tablero o el BE, revisa que el nombre del BE en
-  `generar_sofipos_2026.py` (`BE_UNIVERSO`) coincida con el archivo descargado.
+- Si actualizas el tablero o el BE, revisa que los nombres en
+  `sofipos/config.py` (`BE_UNIVERSO` y `BE_VALIDACION`) coincidan con los
+  archivos descargados.

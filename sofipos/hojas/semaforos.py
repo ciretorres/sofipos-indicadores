@@ -1,11 +1,10 @@
-"""Funciones para crear la hoja de umbrales de los semáforos."""
+"""Funciones para crear y dar formato a la hoja «Semáforos»."""
 
 from __future__ import annotations
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill
 
-from ..config import ANIOS
 from ..estilos import (
     AZUL,
     BORDE,
@@ -26,14 +25,16 @@ from ..fichas import COLORES, FICHAS_SEMAFORO, TOTAL_REGLAS
 from ..utilidades import enumerar
 
 
-def escribir_semaforos(wb: Workbook) -> None:
-    """Crea y da formato a la hoja «Semáforos».
+def escribir_semaforos(wb: Workbook, anios: list[int]) -> None:
+    """Agrega al libro la hoja «Semáforos» con umbrales y reglas.
 
-    Muestra los umbrales de cada indicador, las condiciones que se usan en
-    Excel y una leyenda para interpretar los colores.
+    Incluye los rangos de cada indicador, las condiciones usadas por Excel,
+    una leyenda de colores y notas aclaratorias. No crea las hojas de
+    indicadores; las menciona en las notas según los años recibidos.
 
     Args:
-        wb: Libro de Excel al que se agregará la hoja.
+        wb: Libro de Excel al que se agrega la hoja.
+        anios: Años cuyas hojas de indicadores se mencionan en las notas.
     """
     ws = wb.create_sheet("Semáforos")
     ncols = len(ENC_SEMAFOROS)
@@ -204,7 +205,7 @@ def escribir_semaforos(wb: Workbook) -> None:
 
     # Incluye aclaraciones sobre los rangos y la aplicación de los semáforos.
     hojas_indicadores = enumerar(
-        [f"Indicadores {a}" for a in sorted(ANIOS, reverse=True)]
+        [f"Indicadores {a}" for a in anios]
     )
     notas = [
         "Estos son los mismos umbrales que aplica el formato condicional de las hojas "
