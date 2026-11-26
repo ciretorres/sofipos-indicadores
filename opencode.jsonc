@@ -1,0 +1,26 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // Agente principal: orquesta el flujo spec-driven con planner, reviewer e implementer
+  "default_agent": "plan",
+
+  // MCP de Excel (openpyxl, no requiere Excel instalado; funciona en macOS, Windows y Linux)
+  // Windows: si {env:HOME}/.local/bin/uvx no aplica, sustituir por la ruta literal de uvx
+  // {env:USERPROFILE}/.local/bin/uvx.exe o dejar `uvx` si está en el PATH del servicio.
+  "mcp": {
+    "servers": {
+      "excel": {
+        "type": "local",
+        "command": [
+          "{env:HOME}/.local/bin/uvx",
+          "excel-mcp-server",
+          "stdio",
+          "--allow-dir",
+          "entradas",
+          "--allow-dir",
+          "salidas"
+        ]
+      }
+    }
+  }
+}

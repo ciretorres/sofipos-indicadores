@@ -1,0 +1,42 @@
+"""Catálogo de SOFIPOS con sus nombres oficiales y sitios web."""
+
+from __future__ import annotations
+
+# Cada clave CASFIM se relaciona con el nombre de la sociedad y su sitio web.
+CATALOGO = {
+    "027001": ("Fincomún, Servicios Financieros, S.A. de C.V., Sociedad Financiera Popular", "https://www.fincomun.com.mx"),
+    "027003": ("UNAGRA, S.A. de C.V., Sociedad Financiera Popular", "https://www.unagra.com.mx"),
+    "027004": ("Financiera Mexicana para el Desarrollo Rural, S.A. de C.V., S. F. P.", "https://www.finamigo.com.mx"),
+    "027005": ("Financiera Tamazula, S.A. de C.V., S.F.P.", "https://www.fitaserviciosfinancieros.com.mx"),
+    "027008": ("Financiera Monte de Piedad, S.A. de C.V., S.F.P.", "https://financieramontedepiedad.com.mx"),
+    "027009": ("Klar Technologies, S.A. de C.V., S.F.P.", "https://www.klar.mx"),
+    "027012": ("Ictineo Plataforma, S.A. de C.V., Sociedad Financiera Popular", "https://bbdcdigital.com.mx"),
+    "027013": ("Solución Asea, S.A. de C.V., S.F.P.", "https://www.credicapital.com.mx"),
+    "027014": ("NU MÉXICO FINANCIERA, S.A. de C.V., S.F.P.", "https://www.nu.com.mx"),
+    "027015": ("Operaciones de Tu Lado, S.A. de C.V., Sociedad Financiera Popular", "https://avantthya.com.mx"),
+    "027018": ("Únete Financiera de Allende, S.A. de C.V., S.F.P.", "https://www.unetefinanciera.com.mx"),
+    "027019": ("Sociedad de Alternativas Económicas, S.A. de C.V., S.F.P.", "https://levainvierte.com/"),
+    "027020": ("Multiplica México, S.A. de C.V., S.F.P.", "http://www.multiplicamexico.com"),
+    "027025": ("Financiera del Sector Social, S.A. de C.V., S.F.P.", "https://www.finsocial.mx"),
+    "027026": ("Administradora de Caja Bienestar, S.A. de C.V., S.F.P.", "https://www.ahorrosbienestar.com"),
+    "027028": ("Acción y Evolución, S.A. de C.V., S.F.P.", "https://www.realfinanciera.com"),
+    "027029": ("Opciones Empresariales del Noreste, S.A. de C.V., S.F.P.", "https://www.aspintegraopciones.com"),
+    "027030": ("Financiera Broxel, S.A. de C.V., S.F.P.", "https://broxel.com/financiera/"),
+    "027031": ("Caja Progressa, S.A. de C.V., S.F.P.", "https://www.progressa.com.mx"),
+    "027032": ("Stori México, S.A. de C.V. S.F.P.", "https://www.storicard.com"),
+    "027033": ("Libertad Servicios Financieros, S.A. de C.V., S.F.P.", "https://www.libertad.com.mx"),
+    "027034": ("Capital Activo, S.A. de C.V., S.F.P.", "https://www.capitalactivo.com.mx"),
+    "027035": ("J.P. Sofiexpress, S.A. de C.V., S.F.P.", "http://www.sofiexpress.com.mx"),
+    "027036": ("Fondea Technologies, S.A. de C.V., S.F.P.", "https://www.fondeadora.com"),
+    "027037": ("Financiera Más, S.A. de C.V., S.F.P.", "https://www.financieramas.com"),
+    "027040": ("Impulso para el Desarrollo de México, S.A. de C.V., S.F.P.", "https://www.impulsomexico.net"),
+    "027042": ("Paso Seguro Creando Futuro, S.A. de C.V., S.F.P.", "http://www.pasoseguro.com.mx"),
+    "027044": ("Financiera Súmate, S.A. de C.V., S.F.P.", "https://www.financierasumate.com.mx"),
+    "027045": ("Ku-Bo Financiero, S.A. de C.V., S.F.P.", "https://www.kubofinanciero.com"),
+    "027046": ("Financiera Sustentable de México, S.A. de C.V., S.F.P.", "https://finsus.mx"),
+    "027047": ("Crediclub, S.A. de C.V., S.F.P.", "https://www.crediclub.com"),
+    "027049": ("SFP Porvenir, S.A. de C.V., S.F.P.", "https://www.porvenirsofipo.mx"),
+    "027050": ("Préstamo Empresarial Oportuno, S.A. de C.V., S.F.P.", "https://www.premo.mx"),
+    "027051": ("Grupo Regional de Negocios, S.A. de C.V., S.F.P.", "https://grensa.com"),
+    "027052": ("Trafalgar SFP, S.A. de C.V., Sociedad Financiera Popular", "https://trafalgar.mx"),
+}
